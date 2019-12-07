@@ -26,8 +26,8 @@ beforeEach(async done => {
     clearDB()
   }
 })
-afterEach(done => {
-  mongoose.disconnect()
+afterEach(async done => {
+  await mongoose.disconnect()
   return done()
 })
 afterAll(done => {
