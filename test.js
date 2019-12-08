@@ -27,12 +27,41 @@ const student = new mongoose.Schema({
 }, {timestamps: true})
 
 const school = new mongoose.Schema({
-    name: String,
+    district: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'district'
+    },
+    name: {
+        type: String,
+        unique: false
+    },
     openSince: Number,
     students: Number,
     isGreat: Boolean,
     staff: [{type: String}]
 })
+
+school.index({
+    district: 1,
+    name: 1
+}, { unique: true })
+
+{
+    key: 'value'
+}
+
+school.post('save', function(doc, next) {
+    setTimeout(() => {
+        console.log('post save', doc)
+        next()
+    }, 300)
+})
+
+school.virtual('staffCount')
+    .get(function() {//must be a regular function using 'this'
+        console.log('executed in virtual')
+        return this.staff.length
+    })
 
 const School = mongoose.model('school', school)
 const Student = mongoose.model('student', student)
@@ -43,7 +72,11 @@ connect()
         const found = await Student.find({firstName: 'Tom'})
         const foundById = await Student.findById('anyididgaf')
         const updated = await Student.findByIdAndUpdate('anyididgaf', {})
-        console.log(student)
+        const myschool = await School.create({
+            name: 'my school',
+            staff: ['v', 'f', 'fsa']
+        })
+        console.log(myschool.staffCount)
     })
     .catch(e => console.error(e))
 
@@ -71,12 +104,12 @@ connect()
                 // students: {$gt: 600, $lt: 800},
                 // isGreat: true,
                 //staff: 'b'
-                $in: {staff: ['v', 'b', 'g']}
+                staff: {$in:['v', 'b', 'g']}
             })
             .sort('-openSince')
             .limit(2)
             .exec()
-            console.log(match)
+            //console.log(match)
 
             // const school = await School.findOneAndUpdate(
             //     {name: 'mlk elementary'},
@@ -94,6 +127,6 @@ connect()
             const matchWithName = await Student.findOne({ firstName: 'Trisha'})
                 .populate('school')
                 .exec()
-            console.log(matchWithName)
+            //console.log(matchWithName)
         })
         .catch(e => console.error(e))
