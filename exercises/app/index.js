@@ -11,17 +11,36 @@ app.use(json())
 
 app.get('/todo/:id', async (req, res) => {
   const todoId = req.params.id
+  try {
+    const todo = await Todo.findById(todoId)
+      .lean()
+      .exec()
+    res.status(200).json(todo)
+  } catch (e) {
+    res.status(500).send(e)
+  }
 })
 
 app.get('/todos', async (req, res) => {
-
+  try {
+    const todos = await Todo.find({}).lean().exec()
+    res.status(200).json(todos)
+  } catch (e) {
+    res.status(500).send(e)
+  }
 })
 
-app.post('/todo', async () => {
+app.post('/todo', async (req, res) => {
   const todoToCreate = req.body.todo
+  try {
+    const todo = await Todo.create(todoToCreate)
+    res.status(201).json(todo.toJSON())
+  } catch (e) {
+    res.status(500).send(e)
+  }
 })
 
-connect(/**add mongo url here */)
+connect('mongodb://localhost:27017/somedb')
   .then(() => app.listen(4000, () => {
     console.log('server on http://localhost:4000')
   }))
